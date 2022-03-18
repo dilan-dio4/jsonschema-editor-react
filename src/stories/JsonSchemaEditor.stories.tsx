@@ -3,6 +3,7 @@ import React from "react";
 import { Story, Meta } from "@storybook/react";
 
 import JsonSchemaEditor from "..";
+import { Whoops } from "../JsonSchemaEditor/whoops";
 import { SchemaEditorProps } from "../JsonSchemaEditor.types";
 import { readOnlyData, printIt } from "./helper";
 
@@ -18,8 +19,16 @@ const Template: Story<SchemaEditorProps> = (args) => (
 export const NewJsonSchema = Template.bind({});
 NewJsonSchema.args = {
 	onSchemaChange: (r) => {
-		console.log(r);
+		console.dir(JSON.parse(r));
 	},
+};
+
+export const NewJsonSchemaFull = Template.bind({});
+NewJsonSchemaFull.args = {
+	onSchemaChange: (r) => {
+		console.dir(JSON.parse(r));
+	},
+	anyTypeRoot: true
 };
 
 export const WithData = Template.bind({});
@@ -29,3 +38,9 @@ WithData.args = {
 		printIt(r);
 	},
 };
+
+const WhoopsTemplate: Story = () => (
+	<Whoops />
+);
+
+export const WhoopsExample = WhoopsTemplate.bind({});

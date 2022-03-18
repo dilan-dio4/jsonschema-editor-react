@@ -7,53 +7,37 @@ import {
 	// Select,
 	// IconButton,
 	// Tooltip,
+	Button,
 	Modal,
-	ModalOverlay,
-	ModalContent,
-	ModalHeader,
 	ModalBody,
+	ModalContent,
 	ModalFooter,
-	// Button,
+	ModalHeader,
+	ModalOverlay,
 } from "@chakra-ui/react";
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Select, { Option } from '../Select';
 import Checkbox from '@mui/material/Checkbox';
 import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
 import { useState, State } from "@hookstate/core";
 import { JSONSchema7, JSONSchema7TypeName } from "../../JsonSchemaEditor.types";
-// import { FiSettings } from "react-icons/fi";
-import SettingsIcon from '@mui/icons-material/Settings';
-// import { IoIosAddCircleOutline } from "react-icons/io";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import {
-	SchemaTypes,
-	getDefaultSchema,
-	DataType,
-	handleTypeChange,
-	random,
-} from "../utils";
-
-import { SchemaObject } from "../schema-object";
-import { AdvancedSettings } from "../schema-advanced";
+import { getDefaultSchema, DataType, random, handleTypeChange, SchemaTypes } from "../utils";
 import { SelectChangeEvent } from "@mui/material/Select";
+import SettingsIcon from '@mui/icons-material/Settings';
+import { AdvancedSettings } from "../schema-advanced";
+
 export interface SchemaArrayProps extends FlexProps {
 	schemaState: State<JSONSchema7>;
+	onSchemaChange: (results: string) => void;
 	isReadOnly: State<boolean>;
 }
-export const SchemaArray: React.FunctionComponent<SchemaArrayProps> = (
+export const SchemaRootFull: React.FunctionComponent<SchemaArrayProps> = (
 	props: React.PropsWithChildren<SchemaArrayProps>
 ) => {
-	const { schemaState, isReadOnly } = props;
-
-	const state = useState(schemaState.items as JSONSchema7);
-	const isReadOnlyState = useState(isReadOnly);
-
-	const { length } = state.path.filter((name) => name !== "properties");
-	const tagPaddingLeftStyle = {
-		paddingLeft: `${20 * (length + 1)}px`,
-	};
+	const state = useState(props.schemaState);
+	const isReadOnlyState = useState(props.isReadOnly);
 
 	const onCloseAdvanced = (): void => {
 		localState.isAdvancedOpen.set(false);
@@ -63,38 +47,41 @@ export const SchemaArray: React.FunctionComponent<SchemaArrayProps> = (
 		localState.isAdvancedOpen.set(true);
 	};
 
-	const focusRef = React.createRef<HTMLElement>();
-
 	const localState = useState({
-		isAdvancedOpen: false,
+		isAdvancedOpen: false
 	});
+	const focusRef = React.createRef<HTMLElement>();
 
 	return (
 		<>
+			{props.onSchemaChange(JSON.stringify(state.value))}
 			<Flex
+				data-testid="jsonschema-editor"
 				direction="row"
 				wrap="nowrap"
-				className="array-item"
+				size="sm"
 				mt={2}
 				mr={5}
-				style={tagPaddingLeftStyle}
 			>
-				<TextField
-					key="Items"
-					disabled
-					value="Items"
-					size="small"
-					sx={{ margin: 2, flexShrink: 1 }}
-					InputProps={{ sx: { borderRadius: "9px" } }}
-					variant="outlined"
-				/>
-				<Checkbox disabled sx={{ marginY: 2, marginX: 0.25 }} />
+				<TextField disabled size="small" placeholder="default" sx={{ margin: 2 }} InputProps={{ sx: { borderRadius: "9px" } }} variant="outlined" />
+				<Tooltip
+					aria-label="Required"
+					title="Required"
+					placement="top"
+				>
+					<Checkbox
+						disabled={isReadOnlyState.value}
+						sx={{ marginY: 2, marginX: 0.25 }}
+					/>
+				</Tooltip>
+
 				<Select
+					variant="outlined"
 					disabled={isReadOnlyState.value}
-					value={state.type.value as JSONSchema7TypeName}
+					value={state.type.value ?? ""}
 					sx={{ margin: 2 }}
-					placeholder="Choose data type"
-					onChange={(evt: SelectChangeEvent<"string" | "number" | "boolean" | "object" | "integer" | "array" | "null">) => {
+					placeholder="Choose root data type"
+					onChange={(evt: SelectChangeEvent<string | JSONSchema7TypeName[]>) => {
 						const newSchema = handleTypeChange(
 							evt.target.value as JSONSchema7TypeName,
 							false
@@ -105,7 +92,7 @@ export const SchemaArray: React.FunctionComponent<SchemaArrayProps> = (
 					{SchemaTypes.map((item, index) => <Option key={String(index)} value={item}>{item}</Option>)}
 				</Select>
 				{/* <TextField
-					value={state.title.value}
+					value={state.value?.title ?? ""}
 					disabled={isReadOnlyState.value}
 					size="small"
 					sx={{ margin: 2 }}
@@ -117,7 +104,7 @@ export const SchemaArray: React.FunctionComponent<SchemaArrayProps> = (
 					}}
 				/> */}
 				<TextField
-					value={state.description.value}
+					value={state.value?.description ?? ""}
 					disabled={isReadOnlyState.value}
 					size="small"
 					sx={{ margin: 2, width: "33%" }}
@@ -128,29 +115,11 @@ export const SchemaArray: React.FunctionComponent<SchemaArrayProps> = (
 						state.description.set(evt.target.value);
 					}}
 				/>
-				<Tooltip
-					aria-label="Advanced Settings"
-					title="Advanced Settings"
-					placement="top"
-				>
-					<IconButton
-						disabled={isReadOnlyState.value}
-						size="small"
-						sx={{ marginX: 0.25, marginY: 2, "&:hover": { backgroundColor: "transparent" } }}
-						disableRipple
-						aria-label="Advanced Settings"
-						onClick={() => {
-							showadvanced();
-						}}
-					>
-						<SettingsIcon />
-					</IconButton>
-				</Tooltip>
 
-				{state.type.value === "object" && (
+				{state.value?.type !== "object" && state.value?.type !== "array" && (
 					<Tooltip
-						aria-label="Add Child Node"
-						title="Add Child Node"
+						aria-label="Advanced settings"
+						title="Advanced settings"
 						placement="top"
 					>
 						<IconButton
@@ -158,25 +127,42 @@ export const SchemaArray: React.FunctionComponent<SchemaArrayProps> = (
 							size="small"
 							sx={{ marginX: 0.25, marginY: 2, "&:hover": { backgroundColor: "transparent" } }}
 							disableRipple
-							aria-label="Add Child Node"
+							aria-label="Advanced settings"
 							onClick={() => {
-								const fieldName = `field_${random()}`;
-								(state.properties as State<{
-									[key: string]: JSONSchema7;
-								}>)[fieldName].set(getDefaultSchema(DataType.string));
+								showadvanced();
 							}}
 						>
-							<AddCircleOutlineIcon />
+							<SettingsIcon />
 						</IconButton>
 					</Tooltip>
 				)}
+
+				{state.value?.type === "object" && (
+					<>
+						<Tooltip
+							aria-label="Add child node"
+							title="Add child node"
+							placement="top"
+						>
+							<IconButton
+								disabled={isReadOnlyState.value}
+								size="small"
+								sx={{ marginX: 0.25, marginY: 2 }}
+								color="success"
+								aria-label="Add child node"
+								onClick={() => {
+									const fieldName = `field_${random()}`;
+									(state.properties as State<{
+										[key: string]: JSONSchema7;
+									}>)[fieldName].set(getDefaultSchema(DataType.string));
+								}}
+							>
+								<AddCircleOutlineIcon />
+							</IconButton>
+						</Tooltip>
+					</>
+				)}
 			</Flex>
-			{state.type?.value === "object" && (
-				<SchemaObject isReadOnly={isReadOnlyState} schemaState={state} />
-			)}
-			{state.type?.value === "array" && (
-				<SchemaArray isReadOnly={isReadOnlyState} schemaState={state} />
-			)}
 			<Modal
 				isOpen={localState.isAdvancedOpen.get()}
 				finalFocusRef={focusRef}
@@ -185,16 +171,21 @@ export const SchemaArray: React.FunctionComponent<SchemaArrayProps> = (
 			>
 				<ModalOverlay />
 				<ModalContent>
-					<ModalHeader textAlign="center">Advanced Schema Settings</ModalHeader>
+					<ModalHeader textAlign="center">
+						Advanced Schema Settings
+					</ModalHeader>
 
 					<ModalBody>
-						<AdvancedSettings itemStateProp={state} />
+						<AdvancedSettings
+							itemStateProp={state}
+						/>
 					</ModalBody>
 
 					<ModalFooter>
 						<Button
-							color="primary"
-							sx={{ marginRight: 3 }}
+							colorScheme="blue"
+							variant="ghost"
+							mr={3}
 							onClick={onCloseAdvanced}
 						>
 							Close

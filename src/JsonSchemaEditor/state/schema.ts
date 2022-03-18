@@ -8,7 +8,7 @@ export const defaultSchema = (): JSONSchema7 => {
 	return {
 		$schema: "http://json-schema.org/draft-07/schema#",
 		type: "object",
-		title: "title",
+		// title: "title",
 		description: "",
 		properties: {},
 		required: [],

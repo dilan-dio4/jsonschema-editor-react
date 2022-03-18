@@ -139,7 +139,7 @@ export const AdvancedString: React.FunctionComponent<AdvancedItemStateProps> = (
 				<Textarea
 					value={enumValue || ""}
 					isDisabled={!isEnumChecked}
-					placeholder="ENUM Values - One Entry Per Line"
+					placeholder="ENUM Values - one entry per line"
 					onChange={(evt: React.ChangeEvent<HTMLTextAreaElement>) => {
 						const update = changeEnumOtherValue(evt.target.value);
 						if (update === null) {

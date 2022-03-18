@@ -18,6 +18,9 @@ export const AdvancedSettings: React.FunctionComponent<AdvancedSettingsProps> = 
 	const getAdvancedView = (
 		item: State<JSONSchema7>
 	): JSX.Element | undefined => {
+		if (itemState.type === undefined) {
+			return undefined;
+		}
 		switch (itemState.type.value) {
 			case "string":
 				return <AdvancedString itemStateProp={item} />;

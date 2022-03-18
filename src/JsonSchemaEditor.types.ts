@@ -1,4 +1,5 @@
 import { State } from "@hookstate/core";
+import type { Theme } from "@mui/material/styles";
 
 export interface SchemaEditorProps {
   /**
@@ -7,6 +8,8 @@ export interface SchemaEditorProps {
   data?: JSONSchema7 | undefined;
   onSchemaChange: (results: string) => void;
   readOnly?: boolean;
+  anyTypeRoot?: boolean;
+  muiTheme?: Theme;
 }
 
 export type Schema2 = {

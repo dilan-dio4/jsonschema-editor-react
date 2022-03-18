@@ -1,17 +1,24 @@
 import * as React from "react";
 import {
 	Flex,
-	Input,
-	Checkbox,
+	// Input,
+	// Checkbox,
 	FlexProps,
-	Select,
-	Tooltip,
-	IconButton,
-	useToast,
+	// Select,
+	// Tooltip,
+	// IconButton,
 } from "@chakra-ui/react";
-import { FiSettings } from "react-icons/fi";
-import { IoIosAddCircleOutline } from "react-icons/io";
-import { AiOutlineDelete } from "react-icons/ai";
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Select, { Option } from '../Select';
+import Checkbox from '@mui/material/Checkbox';
+import TextField from '@mui/material/TextField';
+// import { FiSettings } from "react-icons/fi";
+import SettingsIcon from '@mui/icons-material/Settings';
+// import { IoIosAddCircleOutline } from "react-icons/io";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+// import { AiOutlineDelete } from "react-icons/ai";
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { DropPlus } from "../drop-plus";
 import { useState, State, none } from "@hookstate/core";
 import {
@@ -30,6 +37,7 @@ import { renameKeys, deleteKey } from "../utils";
 import { useDebouncedCallback } from "use-debounce";
 import { SchemaObject } from "../schema-object";
 import { SchemaArray } from "../schema-array";
+import { SelectChangeEvent } from "@mui/material/Select";
 
 export interface SchemaItemProps extends FlexProps {
 	required: string[];
@@ -57,8 +65,8 @@ export const SchemaItem: React.FunctionComponent<SchemaItemProps> = (
 	const parentStateOrNull: State<JSONSchema7> | undefined = parentState.ornull;
 	const propertiesOrNull:
 		| State<{
-				[key: string]: JSONSchema7Definition;
-		  }>
+			[key: string]: JSONSchema7Definition;
+		}>
 		| undefined = parentStateOrNull.properties.ornull;
 
 	const nameState = useState(name);
@@ -78,7 +86,7 @@ export const SchemaItem: React.FunctionComponent<SchemaItemProps> = (
 	const isRequired = required
 		? required.length > 0 && required.includes(name)
 		: false;
-	const toast = useToast();
+	const duplicateErrorState = useState("");
 
 	// Debounce callback
 	const debounced = useDebouncedCallback(
@@ -86,14 +94,7 @@ export const SchemaItem: React.FunctionComponent<SchemaItemProps> = (
 		(newValue: string) => {
 			// Todo: make toast for duplicate properties
 			if (propertiesOrNull && propertiesOrNull[newValue].value) {
-				toast({
-					title: "Duplicate Property",
-					description: "Property already exists!",
-					status: "error",
-					duration: 1000,
-					isClosable: true,
-					position: "top",
-				});
+				duplicateErrorState.set("Duplicate property") // We don't have to set back to "" because this already re-renders
 			} else {
 				const oldName = name;
 				const proptoupdate = newValue;
@@ -105,8 +106,8 @@ export const SchemaItem: React.FunctionComponent<SchemaItemProps> = (
 				parentStateOrNull.properties.set(JSON.parse(JSON.stringify(newobj)));
 			}
 		},
-		// delay in ms
-		1000
+		// delay in ms, race condition if someone opens advanced settings too fast, but after debounce user is unfocused for some reason
+		900
 	);
 
 	if (!itemState.value) {
@@ -122,40 +123,47 @@ export const SchemaItem: React.FunctionComponent<SchemaItemProps> = (
 				className="schema-item"
 				style={tagPaddingLeftStyle}
 			>
-				<Input
-					isDisabled={isReadOnlyState.value}
+				<TextField
+					disabled={isReadOnlyState.value}
 					defaultValue={nameState.value}
-					size="sm"
-					margin={2}
-					variant="outline"
-					placeholder="Enter property name"
+					size="small"
+					sx={{ margin: 2, "& .MuiFormHelperText-root": { height: 0 } }}
+					error={!!duplicateErrorState.value}
+					helperText={duplicateErrorState.value || <></>}
+					InputProps={{ sx: { borderRadius: "9px" } }}
+					variant="outlined"
+					placeholder="Property name"
 					onChange={(evt: React.ChangeEvent<HTMLInputElement>) => {
 						debounced(evt.target.value);
 					}}
 				/>
-				<Checkbox
-					isDisabled={isReadOnlyState.value}
-					isChecked={isRequired}
-					margin={2}
-					colorScheme="blue"
-					onChange={(evt: React.ChangeEvent<HTMLInputElement>) => {
-						if (!evt.target.checked && required.includes(name)) {
-							(parentState.required as State<string[]>)[
-								required.indexOf(name)
-							].set(none);
-						} else {
-							parentState.required.merge([name]);
-						}
-					}}
-				/>
+				<Tooltip
+					aria-label="Required"
+					title="Required"
+					placement="top"
+				>
+					<Checkbox
+						disabled={isReadOnlyState.value}
+						checked={isRequired}
+						sx={{ marginY: 2, marginX: 0.25 }}
+						onChange={(evt: React.ChangeEvent<HTMLInputElement>) => {
+							if (!evt.target.checked && required.includes(name)) {
+								(parentState.required as State<string[]>)[
+									required.indexOf(name)
+								].set(none);
+							} else {
+								parentState.required.merge([name]);
+							}
+						}}
+					/>
+				</Tooltip>
 				<Select
-					isDisabled={false}
-					variant="outline"
+					disabled={false}
+					variant="outlined"
 					value={itemState.type.value}
-					size="sm"
-					margin={2}
+					sx={{ margin: 2 }}
 					placeholder="Choose data type"
-					onChange={(evt: React.ChangeEvent<HTMLSelectElement>) => {
+					onChange={(evt: SelectChangeEvent<"string" | "number" | "boolean" | "object" | "integer" | "array" | "null" | JSONSchema7TypeName[]>) => {
 						const newSchema = handleTypeChange(
 							evt.target.value as JSONSchema7TypeName,
 							false
@@ -163,32 +171,28 @@ export const SchemaItem: React.FunctionComponent<SchemaItemProps> = (
 						itemState.set(newSchema as JSONSchema7);
 					}}
 				>
-					{SchemaTypes.map((item, index) => {
-						return (
-							<option key={String(index)} value={item}>
-								{item}
-							</option>
-						);
-					})}
+					{SchemaTypes.map((item, index) => <Option key={String(index)} value={item}>{item}</Option>)}
 				</Select>
-				<Input
-					isDisabled={isReadOnlyState.value}
+				{/* <TextField
+					disabled={isReadOnlyState.value}
 					value={itemState.title.value || ""}
-					size="sm"
-					margin={2}
-					variant="outline"
-					placeholder="Add Title"
+					size="small"
+					sx={{ margin: 2 }}
+					InputProps={{ sx: { borderRadius: "9px" } }}
+					variant="outlined"
+					placeholder="Title"
 					onChange={(evt: React.ChangeEvent<HTMLInputElement>) => {
 						itemState.title.set(evt.target.value);
 					}}
-				/>
-				<Input
-					isDisabled={isReadOnlyState.value}
+				/> */}
+				<TextField
+					disabled={isReadOnlyState.value}
 					value={itemState.description.value || ""}
-					size="sm"
-					margin={2}
-					variant="outline"
-					placeholder="Add Description"
+					size="small"
+					sx={{ margin: 2, width: "33%" }}
+					InputProps={{ sx: { borderRadius: "9px" } }}
+					variant="outlined"
+					placeholder="Description"
 					onChange={(evt: React.ChangeEvent<HTMLInputElement>) => {
 						itemState.description.set(evt.target.value);
 					}}
@@ -196,48 +200,36 @@ export const SchemaItem: React.FunctionComponent<SchemaItemProps> = (
 
 				{itemState.type.value !== "object" && itemState.type.value !== "array" && (
 					<Tooltip
-						hasArrow
-						aria-label="Advanced Settings"
-						label="Advanced Settings"
+						aria-label="Advanced settings"
+						title="Advanced settings"
 						placement="top"
 					>
 						<IconButton
-							isRound
-							isDisabled={isReadOnlyState.value}
-							size="sm"
-							mt={2}
-							mb={2}
-							ml={1}
-							variant="link"
-							colorScheme="blue"
-							fontSize="16px"
-							icon={<FiSettings />}
-							aria-label="Advanced Settings"
+							disabled={isReadOnlyState.value}
+							size="small"
+							sx={{ marginX: 0.25, marginY: 2, "&:hover": { backgroundColor: "transparent" } }}
+							disableRipple
+							aria-label="Advanced settings"
 							onClick={() => {
 								showadvanced(name);
 							}}
-						/>
+						>
+							<SettingsIcon />
+						</IconButton>
 					</Tooltip>
 				)}
 
 				<Tooltip
-					hasArrow
-					aria-label="Remove Node"
-					label="Remove Node"
+					aria-label="Remove node"
+					title="Remove node"
 					placement="top"
 				>
 					<IconButton
-						isRound
-						isDisabled={isReadOnlyState.value}
-						size="sm"
-						mt={2}
-						mb={2}
-						ml={1}
-						variant="link"
-						colorScheme="red"
-						fontSize="16px"
-						icon={<AiOutlineDelete />}
-						aria-label="Remove Node"
+						disabled={isReadOnlyState.value}
+						size="small"
+						sx={{ marginX: 0.25, marginY: 2, "&:hover": { backgroundColor: "transparent" } }}
+						disableRipple
+						aria-label="Remove node"
 						onClick={() => {
 							const updatedState = deleteKey(
 								nameState.value,
@@ -245,7 +237,9 @@ export const SchemaItem: React.FunctionComponent<SchemaItemProps> = (
 							);
 							parentState.properties.set(updatedState);
 						}}
-					/>
+					>
+						<DeleteOutlineIcon />
+					</IconButton>
 				</Tooltip>
 
 				{itemState.type?.value === "object" ? (
@@ -256,22 +250,15 @@ export const SchemaItem: React.FunctionComponent<SchemaItemProps> = (
 					/>
 				) : (
 					<Tooltip
-						hasArrow
-						aria-label="Add Sibling Node"
-						label="Add Sibling Node"
+						aria-label="Add sibling node"
+						title="Add sibling node"
 						placement="top"
 					>
 						<IconButton
-							isRound
-							isDisabled={isReadOnlyState.value}
-							size="sm"
-							mt={2}
-							mb={2}
-							mr={2}
-							variant="link"
-							colorScheme="green"
-							fontSize="16px"
-							icon={<IoIosAddCircleOutline />}
+							disabled={isReadOnlyState.value}
+							size="small"
+							sx={{ marginX: 0.25, marginY: 2, "&:hover": { backgroundColor: "transparent" } }}
+							disableRipple
 							aria-label="Add Sibling Node"
 							onClick={() => {
 								if (propertiesOrNull) {
@@ -281,7 +268,9 @@ export const SchemaItem: React.FunctionComponent<SchemaItemProps> = (
 										.set(getDefaultSchema(DataType.string) as JSONSchema7);
 								}
 							}}
-						/>
+						>
+							<AddCircleOutlineIcon />
+						</IconButton>
 					</Tooltip>
 				)}
 			</Flex>

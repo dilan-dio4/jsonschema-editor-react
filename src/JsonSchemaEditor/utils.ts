@@ -68,13 +68,13 @@ export const getDefaultSchema = (
 				? {
 						$schema: schemaDraft,
 						type: "number",
-						title: "",
+						// title: "",
 						description: "",
 						properties: {},
 				  }
 				: {
 						type: "number",
-						title: "",
+						// title: "",
 						description: "",
 						properties: {},
 				  };
@@ -83,13 +83,13 @@ export const getDefaultSchema = (
 				? {
 						$schema: schemaDraft,
 						type: "boolean",
-						title: "",
+						// title: "",
 						description: "",
 						properties: {},
 				  }
 				: {
 						type: "boolean",
-						title: "",
+						// title: "",
 						description: "",
 						properties: {},
 				  };
@@ -98,13 +98,13 @@ export const getDefaultSchema = (
 				? {
 						$schema: schemaDraft,
 						type: "integer",
-						title: "",
+						// title: "",
 						description: "",
 						properties: {},
 				  }
 				: {
 						type: "integer",
-						title: "",
+						// title: "",
 						description: "",
 						properties: {},
 				  };
@@ -113,21 +113,21 @@ export const getDefaultSchema = (
 				? {
 						$schema: schemaDraft,
 						type: "array",
-						title: "",
+						// title: "",
 						description: "",
 						items: {
 							type: "string",
-							title: "",
+							// title: "",
 							description: "",
 						},
 				  }
 				: {
 						type: "array",
-						title: "",
+						// title: "",
 						description: "",
 						items: {
 							type: "string",
-							title: "",
+							// title: "",
 							description: "",
 						},
 				  };
@@ -136,14 +136,14 @@ export const getDefaultSchema = (
 				? {
 						$schema: schemaDraft,
 						type: "object",
-						title: "",
+						// title: "",
 						description: "",
 						properties: {},
 						required: [],
 				  }
 				: {
 						type: "object",
-						title: "",
+						// title: "",
 						description: "",
 						properties: {},
 						required: [],
@@ -154,13 +154,13 @@ export const getDefaultSchema = (
 				? {
 						$schema: schemaDraft,
 						type: "string",
-						title: "",
+						// title: "",
 						description: "",
 						properties: {},
 				  }
 				: {
 						type: "string",
-						title: "",
+						// title: "",
 						description: "",
 						properties: {},
 				  };
