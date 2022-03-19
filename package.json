@@ -1,6 +1,6 @@
 {
-	"name": "@dilan-dio4/json-schema-editor",
-	"version": "2.1.0",
+	"name": "json-schema-editor",
+	"version": "2.1.1",
 	"description": "JsonSchema Editor React Control",
 	"repository": "https://github.com/dilan-dio4/jsonschema-editor-react",
 	"license": "Apache 2.0",
