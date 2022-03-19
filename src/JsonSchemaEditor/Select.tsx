@@ -6,7 +6,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 export default React.forwardRef(function CustomSelect<TValue>(props: SelectProps<TValue>, ref: React.ForwardedRef<HTMLUListElement>) {
     return <Select
         {...props}
-        ref={ref}
+        ref={ref as any}
         autoWidth
         size="small"
         variant="outlined"

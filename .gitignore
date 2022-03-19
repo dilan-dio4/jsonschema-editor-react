@@ -51,9 +51,6 @@ typings/
 # OSX
 .DS_Store
 
-# compiled server output
-dist
-
 # storybook
 storybook-static
 .cache
