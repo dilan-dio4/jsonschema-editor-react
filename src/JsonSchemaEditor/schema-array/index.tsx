@@ -80,9 +80,9 @@ export const SchemaArray: React.FunctionComponent<SchemaArrayProps> = (
 				style={tagPaddingLeftStyle}
 			>
 				<TextField
-					key="Items"
+					key="elements"
 					disabled
-					value="Items"
+					value="elements"
 					size="small"
 					sx={{ margin: 2, flexShrink: 1 }}
 					InputProps={{ sx: { borderRadius: "9px" } }}

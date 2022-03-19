@@ -1,8 +1,8 @@
 {
-	"name": "@optum/json-schema-editor",
+	"name": "@dilan-dio4/json-schema-editor",
 	"version": "2.1.0",
 	"description": "JsonSchema Editor React Control",
-	"repository": "https://github.com/optum/jsonschema-editor-react",
+	"repository": "https://github.com/dilan-dio4/jsonschema-editor-react",
 	"license": "Apache 2.0",
 	"engines": {
 		"node": ">=10.18.0 <11 || >=12.14.0 <13 || >=13.5.0"
@@ -57,7 +57,6 @@
 		"@hookstate/core": "^3.0.7",
 		"framer-motion": "^4.0.0",
 		"ramda": "^0.27.1",
-		"typescript": "^3.9.5",
 		"use-debounce": "^6.0.1",
 		"web-vitals": "^0.2.2"
 	},
@@ -69,7 +68,8 @@
 		"@mui/styles": "^5.5.0",
 		"@mui/icons-material": "^5.2.4",
 		"react": "^17.0.2",
-		"react-dom": "^17.0.2"
+		"react-dom": "^17.0.2",
+		"typescript": "^4.0.3"
 	},
 	"devDependencies": {
 		"@storybook/addon-actions": "^6.2.9",
